@@ -15,6 +15,7 @@ function Game:fit(dist, time, score)
     score = 0
   end
   --return ((dist * 1.3)
+  gui.text(5, 187, "Dist: " .. dist)
   return (dist / 3) + (score / 2) + (time - 300) * 0.4
 end
 
@@ -43,7 +44,7 @@ function cross(parentA, parentB)
     childA.instructions[i] = best.instructions[i]
   end
 
-  moves = {2, 4, 5}
+  moves = {2, 3, 4, 5}
   for i = parentA.deathIndex, parentA.deathIndex + frameSkipCount, 1 do
     childA[i] = moves[math.random(3)]
   end
@@ -58,7 +59,7 @@ function cross(parentA, parentB)
   --    childB.instructions[math.random(#childB.instructions)] = childB.instructions[math.random(#childB.instructions)]
   --  end
   --end
-
+  
   return childA, childB
 end
 
@@ -79,11 +80,11 @@ function Game:new()
   -- 5 x
   function randomArr()
     arr = {}
-    arrx = {2, 4, 5}
+    arrx = {2, 3, 4, 5}
     hasMadeCount = -1
-    for z=0,#arrx,1 do
+    for z=1,#arrx,1 do
       i = arrx[z]
-      if not (i == 0) and not (i == 3) then
+      if not (i == 0) then
         if i == 4 or i == 5 then
           if math.random(10) == 5 then
             table.insert(arr, i)
@@ -209,7 +210,6 @@ function draw()
 end
 
 function loop()
-  state = savestate.create(2)
   vars["mX"] = memory.readbytesigned(0x94)
   vars["mY"] = memory.readbytesigned(0x96)
   vars["sX"] = vars["mX"] - memory.readbytesigned(0x1A)
@@ -278,13 +278,14 @@ function loop()
     else
       bGame.dist = bGame.calcDist()
     end
+    maxX = 0
   elseif(alreadySet and vars["resettrigger"] == 0) then
     alreadySet = false
   end
   if framesStuck > 100 then
     joypad.set(1, {B=nil})
 
-    print(flipTimer)
+    -- print(framesStuck)
 
     if flipTimer < 45 then
       joypad.set(1, {right=1})
@@ -298,10 +299,13 @@ function loop()
   draw()
 end
 
-emu.speedmode("nothrottle")
+emu.speedmode("turbo")
+
+state = savestate.create(2)
+savestate.save(state)
 
 while(true) do
-  if not (framesStuck > 100) then
+  if not (framesStuck > 100) and not (frameStuck == 154) and not (frameStuck == 191) then
     if contains(joypad.getdown(1),  A) and framesUpOne < 400 then
       joypad.set(1, {A=nil})
       framesUpOne = 0
